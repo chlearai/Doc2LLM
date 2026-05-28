@@ -46,9 +46,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link href="/dashboard" className="brand" aria-label="Markdown Dashboard home">
-          <span className="brand-mark">M</span>
-          <span>Markdown Dashboard</span>
+        <Link href="/dashboard" className="brand" aria-label="Doc2LLM home">
+          <img src="/favicon.svg" alt="" width="32" height="18" style={{ objectFit: "contain" }} />
+          <span>Doc2LLM</span>
         </Link>
         <nav className="nav" aria-label="Primary navigation">
           {navItems.map((item) => {

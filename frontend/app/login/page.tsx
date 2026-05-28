@@ -1,31 +1,43 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { LogIn } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { FormEvent, Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEV_AUTH_COOKIE, DEV_AUTH_EMAIL, DEV_AUTH_PASSWORD, hasSupabaseEnvironment } from "@/lib/env";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-function LoginForm() {
+function LoginForm({
+  isSignUp,
+  setIsSignUp,
+}: {
+  isSignUp: boolean;
+  setIsSignUp: (val: boolean) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const submittedEmail = String(formData.get("email") ?? "");
+    const submittedEmail = String(formData.get("email") ?? "").trim();
     const submittedPassword = String(formData.get("password") ?? "");
     setLoading(true);
     setError("");
+    setSuccess("");
 
     if (!hasSupabaseEnvironment()) {
       setLoading(false);
+      if (isSignUp) {
+        setError("Sign up is only supported when Supabase Auth is enabled. Use the local credentials to sign in.");
+        return;
+      }
       if (submittedEmail === DEV_AUTH_EMAIL && submittedPassword === DEV_AUTH_PASSWORD) {
         document.cookie = `${DEV_AUTH_COOKIE}=1; path=/; max-age=86400; SameSite=Lax`;
         router.replace(searchParams.get("next") || "/dashboard");
@@ -37,19 +49,40 @@ function LoginForm() {
     }
 
     const supabase = createSupabaseBrowserClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: submittedEmail,
-      password: submittedPassword,
-    });
-    setLoading(false);
 
-    if (signInError) {
-      setError("Sign in failed. Check your email and password, then try again.");
-      return;
+    if (isSignUp) {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: submittedEmail,
+        password: submittedPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      setLoading(false);
+
+      if (signUpError) {
+        setError(signUpError.message || "Registration failed. Try again.");
+        return;
+      }
+
+      setSuccess("Account created! Check your email for a confirmation link.");
+      setEmail("");
+      setPassword("");
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: submittedEmail,
+        password: submittedPassword,
+      });
+      setLoading(false);
+
+      if (signInError) {
+        setError("Sign in failed. Check your email and password, then try again.");
+        return;
+      }
+
+      router.replace(searchParams.get("next") || "/dashboard");
+      router.refresh();
     }
-
-    router.replace(searchParams.get("next") || "/dashboard");
-    router.refresh();
   }
 
   return (
@@ -67,17 +100,40 @@ function LoginForm() {
         label="Password"
         name="password"
         type="password"
-        autoComplete="current-password"
+        autoComplete={isSignUp ? "new-password" : "current-password"}
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         error={error}
         required
       />
-      <Button type="submit" loading={loading} icon={<LogIn size={16} aria-hidden="true" />}>
-        Sign in
+      
+      {success ? <p className="message success-message">{success}</p> : null}
+
+      <Button 
+        type="submit" 
+        loading={loading} 
+        icon={isSignUp ? <UserPlus size={16} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
+      >
+        {isSignUp ? "Sign up" : "Sign in"}
       </Button>
-      {!hasSupabaseEnvironment() ? (
-        <p className="dev-auth-note">
+
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
+        <button
+          type="button"
+          onClick={() => {
+            setIsSignUp(!isSignUp);
+            setError("");
+            setSuccess("");
+          }}
+          className="text-link"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}
+        >
+          {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+        </button>
+      </div>
+
+      {!hasSupabaseEnvironment() && !isSignUp ? (
+        <p className="dev-auth-note" style={{ marginTop: "12px" }}>
           Local dev login: <strong>{DEV_AUTH_EMAIL}</strong> / <strong>{DEV_AUTH_PASSWORD}</strong>
         </p>
       ) : null}
@@ -86,16 +142,28 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  const [isSignUp, setIsSignUp] = useState(false);
+
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <img src="/favicon.svg" alt="" width="80" height="45" style={{ objectFit: "contain", display: "block", margin: "0 auto 12px" }} />
+          <p className="eyebrow" style={{ margin: 0 }}>Doc2LLM</p>
+        </div>
         <div>
-          <p className="eyebrow">Internal dashboard</p>
-          <h1 id="login-title">Sign in to Markdown Dashboard</h1>
-          <p className="login-copy">Convert documents into clean Markdown through a focused, secure workspace.</p>
+          <h1 id="login-title" style={{ textAlign: "center" }}>
+            {isSignUp ? "Create your account" : "Sign in to Doc2LLM"}
+          </h1>
+          <p className="login-copy" style={{ textAlign: "center" }}>
+            {isSignUp 
+              ? "Register to start converting documents into clean, LLM-friendly Markdown."
+              : "Convert documents into clean, LLM-friendly Markdown through a secure, focused workspace."
+            }
+          </p>
         </div>
         <Suspense>
-          <LoginForm />
+          <LoginForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
         </Suspense>
       </section>
     </main>
