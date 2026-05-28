@@ -1,4 +1,4 @@
-# PRD: File-to-Markdown Converter Dashboard
+# PRD: Doc2LLM Converter Dashboard
 
 ## 1. Product Summary
 
@@ -486,3 +486,19 @@ Markdown output is saved
 Original document is deleted
 User previews/copies/downloads Markdown
 ```
+
+---
+
+## 21. Additional Scope: Sign-Up Flow & Admin Dashboard
+
+### Supabase Sign-Up Flow Trigger
+The sign-up flow is configured directly through Supabase Auth on the frontend. When a new user registers, a PostgreSQL trigger automatically captures the event in `auth.users` and synchronizes user data to the public `profiles` table. This keeps the sign-up flow simple and decoupled from direct backend APIs.
+
+### Admin Dashboard MVP
+An internal admin interface is provided at `/admin` to enable system administration, user management, and health checks:
+- **Authentication**: Accessible only to users whose `profiles.role` is set to `'admin'`. Non-admin users are automatically redirected to the `/dashboard`.
+- **System Overview**: Stat cards indicating total users, total conversions, conversions completed today, failed conversion logs, and pending conversion backlog size.
+- **User Administration**: Listing all registered users, dynamic active/inactive status toggles, user role changes, and search functionality.
+- **File & Job Audits**: Inspecting converted outputs across users, cancel stuck conversions, trigger simulated retries, and delete records permanently.
+- **Logs Browser**: Centralized interface to view info/warning/error conversion logs.
+

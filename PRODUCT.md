@@ -2,7 +2,7 @@
 
 ## Product Name
 
-Markdown Dashboard
+Doc2LLM
 
 ## Register
 
@@ -10,7 +10,7 @@ product
 
 ## Product Purpose
 
-Markdown Dashboard helps internal teams convert documents into clean, AI-ready Markdown through a secure, simple dashboard.
+Doc2LLM helps internal teams convert documents into clean, AI-ready Markdown through a secure, simple dashboard.
 
 Users sign in, upload a supported file, wait for conversion, preview the Markdown, copy it, or download the generated `.md` file. The source document is never stored permanently.
 
@@ -78,7 +78,7 @@ Avoid:
 
 MVP includes:
 
-- Supabase Auth login
+- Supabase Auth login and sign up
 - File upload
 - File validation
 - Conversion status

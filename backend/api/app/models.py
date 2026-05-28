@@ -87,3 +87,69 @@ class DownloadUrlResponse(BaseModel):
 class DeleteConversionResponse(BaseModel):
     id: str
     status: Literal["DELETED"]
+
+
+class AdminUserProfileResponse(BaseModel):
+    id: str
+    email: str
+    full_name: str | None = None
+    role: str
+    is_active: bool
+    created_at: datetime
+    files_converted: int
+
+
+class AdminUserListResponse(BaseModel):
+    items: list[AdminUserProfileResponse]
+    limit: int
+    offset: int
+
+
+class AdminStatsResponse(BaseModel):
+    total_users: int
+    total_converted_files: int
+    files_processed_today: int
+    failed_conversions: int
+    pending_conversions: int
+    system_health: str
+
+
+class AdminCreateUserRequest(BaseModel):
+    email: str
+    full_name: str | None = None
+    role: str = "user"
+
+
+class AdminUserStatusRequest(BaseModel):
+    is_active: bool
+
+
+class AdminUserRoleRequest(BaseModel):
+    role: str
+
+
+class AdminLogItem(BaseModel):
+    conversion_id: str
+    user_id: str
+    level: str
+    message: str
+    created_at: datetime
+
+
+class AdminLogListResponse(BaseModel):
+    items: list[AdminLogItem]
+    limit: int
+    offset: int
+
+
+class SystemHealthIndicator(BaseModel):
+    status: Literal["Healthy", "Warning", "Down"]
+    message: str | None = None
+
+
+class AdminSystemHealthResponse(BaseModel):
+    railway_converter: SystemHealthIndicator
+    supabase_connection: SystemHealthIndicator
+    conversion_queue: SystemHealthIndicator
+    storage_write: SystemHealthIndicator
+

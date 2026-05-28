@@ -1,5 +1,5 @@
 [project]
-name = "markdown-dashboard-api"
+name = "doc2llm-api"
 version = "0.1.0"
 description = "FastAPI backend for converting uploaded files to Markdown."
 requires-python = ">=3.11"
@@ -17,6 +17,7 @@ dependencies = [
     "python-pptx",
     "python-multipart>=0.0.12",
     "uvicorn[standard]>=0.30.0",
+    "PyJWT>=2.8.0",
 ]
 
 [project.optional-dependencies]

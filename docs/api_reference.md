@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the FastAPI contract for the File-to-Markdown dashboard.
+This document defines the FastAPI contract for the Doc2LLM dashboard.
 
 FastAPI automatically generates interactive Swagger UI documentation from route definitions and Pydantic models. When the backend is running, the API docs should be available at:
 

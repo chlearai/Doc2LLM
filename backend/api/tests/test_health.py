@@ -19,5 +19,5 @@ def test_openapi_has_product_metadata():
 
     assert response.status_code == 200
     body = response.json()
-    assert body["info"]["title"] == "File-to-Markdown Converter API"
+    assert body["info"]["title"] == "Doc2LLM API"
     assert body["info"]["version"] == "0.1.0"

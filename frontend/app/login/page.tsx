@@ -39,8 +39,14 @@ function LoginForm({
         return;
       }
       if (submittedEmail === DEV_AUTH_EMAIL && submittedPassword === DEV_AUTH_PASSWORD) {
-        document.cookie = `${DEV_AUTH_COOKIE}=1; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `${DEV_AUTH_COOKIE}=user; path=/; max-age=86400; SameSite=Lax`;
         router.replace(searchParams.get("next") || "/dashboard");
+        router.refresh();
+        return;
+      }
+      if (submittedEmail === "admin@local.test" && submittedPassword === "markdown-admin") {
+        document.cookie = `${DEV_AUTH_COOKIE}=admin; path=/; max-age=86400; SameSite=Lax`;
+        router.replace(searchParams.get("next") || "/admin");
         router.refresh();
         return;
       }
@@ -133,8 +139,10 @@ function LoginForm({
       </div>
 
       {!hasSupabaseEnvironment() && !isSignUp ? (
-        <p className="dev-auth-note" style={{ marginTop: "12px" }}>
-          Local dev login: <strong>{DEV_AUTH_EMAIL}</strong> / <strong>{DEV_AUTH_PASSWORD}</strong>
+        <p className="dev-auth-note" style={{ marginTop: "12px", fontSize: "0.85rem", color: "var(--foreground-muted)", textAlign: "center", lineHeight: "1.5" }}>
+          Local dev logins:<br/>
+          User: <strong>{DEV_AUTH_EMAIL}</strong> / <strong>{DEV_AUTH_PASSWORD}</strong><br/>
+          Admin: <strong>admin@local.test</strong> / <strong>markdown-admin</strong>
         </p>
       ) : null}
     </form>

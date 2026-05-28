@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
 import { DEV_AUTH_COOKIE, getSupabaseAnonKey, getSupabaseUrl, hasSupabaseEnvironment } from "./lib/env";
 
-const protectedRoutes = ["/dashboard", "/history", "/settings", "/conversions"];
+const protectedRoutes = ["/dashboard", "/history", "/settings", "/conversions", "/admin"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -11,8 +11,16 @@ export async function middleware(request: NextRequest) {
   const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(request.nextUrl.hostname);
 
   if (!hasSupabaseEnvironment()) {
-    const hasDevAuth = isLocalHost && request.cookies.get(DEV_AUTH_COOKIE)?.value === "1";
+    const devAuthVal = request.cookies.get(DEV_AUTH_COOKIE)?.value;
+    const hasDevAuth = isLocalHost && (devAuthVal === "user" || devAuthVal === "admin");
+    const isDevAdmin = isLocalHost && devAuthVal === "admin";
+
     if (isProtected) {
+      if (pathname.startsWith("/admin") && !isDevAdmin) {
+        const dashboardUrl = request.nextUrl.clone();
+        dashboardUrl.pathname = "/dashboard";
+        return NextResponse.redirect(dashboardUrl);
+      }
       if (hasDevAuth) {
         return NextResponse.next();
       }
@@ -22,10 +30,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     if (pathname === "/login" && hasDevAuth) {
-      const dashboardUrl = request.nextUrl.clone();
-      dashboardUrl.pathname = "/dashboard";
-      dashboardUrl.search = "";
-      return NextResponse.redirect(dashboardUrl);
+      const targetUrl = request.nextUrl.clone();
+      targetUrl.pathname = isDevAdmin ? "/admin" : "/dashboard";
+      targetUrl.search = "";
+      return NextResponse.redirect(targetUrl);
     }
     return NextResponse.next();
   }

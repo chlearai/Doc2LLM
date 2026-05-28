@@ -1,4 +1,4 @@
-# File-to-Markdown Dashboard Implementation Plan
+# Doc2LLM Implementation Plan
 
 ## Goal
 
