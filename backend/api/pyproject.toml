@@ -1,0 +1,29 @@
+[project]
+name = "markdown-dashboard-api"
+version = "0.1.0"
+description = "FastAPI backend for converting uploaded files to Markdown."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "httpx>=0.27.0",
+    "lxml",
+    "markitdown[docx,pdf,pptx,xlsx] @ file:///D:/Chlear%20Projects/Markdown%20IT%20Project/Markdown%20Dashboard/markdown-it-master/backend/markitdown-main/markitdown-main/packages/markitdown",
+    "mammoth~=1.11.0",
+    "openpyxl",
+    "pandas",
+    "pdfminer.six>=20251230",
+    "pdfplumber>=0.11.9",
+    "pydantic-settings>=2.6.0",
+    "python-pptx",
+    "python-multipart>=0.0.12",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
