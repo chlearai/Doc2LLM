@@ -4,7 +4,7 @@ const copy: Record<ConversionStatus, string> = {
   UPLOAD_RECEIVED: "File received.",
   PENDING: "Waiting for a conversion slot.",
   PROCESSING: "Converting your file.",
-  COMPLETED: "Markdown is ready.",
+  COMPLETED: "Conversion completed.",
   FAILED: "Conversion failed. Upload the file again or try a smaller document.",
   DELETED: "Conversion deleted.",
 };
