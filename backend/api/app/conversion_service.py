@@ -15,7 +15,7 @@ def _ensure_local_markitdown_on_path() -> None:
         / "src"
     )
     markitdown_src_text = str(markitdown_src)
-    if markitdown_src_text not in sys.path:
+    if markitdown_src.exists() and markitdown_src_text not in sys.path:
         sys.path.insert(0, markitdown_src_text)
 
 
