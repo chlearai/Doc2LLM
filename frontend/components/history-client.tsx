@@ -37,16 +37,6 @@ export function HistoryClient() {
     }
   }
 
-  async function deleteConversion(id: string) {
-    setError("");
-    try {
-      await withClient((client) => client.deleteConversion(id));
-      setItems((existing) => existing.filter((item) => item.id !== id));
-    } catch (deleteError) {
-      setError(readableError(deleteError));
-    }
-  }
-
   useEffect(() => {
     loadHistory();
   }, []);
@@ -59,7 +49,7 @@ export function HistoryClient() {
     <>
       {error ? <p className="message error-message">{error}</p> : null}
       {items.length ? (
-        <ConversionTable conversions={items} onDelete={deleteConversion} />
+        <ConversionTable conversions={items} />
       ) : (
         <EmptyState title="No conversion history">Convert a file from the dashboard to build your history.</EmptyState>
       )}

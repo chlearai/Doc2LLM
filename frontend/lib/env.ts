@@ -28,6 +28,6 @@ export function hasSupabaseEnvironment() {
 
 export const DEV_AUTH_EMAIL = "dev@local.test";
 export const DEV_AUTH_PASSWORD = "markdown-dev";
-export const DEV_AUTH_COOKIE = "doc2llm_dev_auth";
+export const DEV_AUTH_COOKIE = "markit_dev_auth";
 export const DEV_ADMIN_EMAIL = "admin@local.test";
 export const DEV_ADMIN_PASSWORD = "markdown-admin";

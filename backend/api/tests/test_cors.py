@@ -24,11 +24,11 @@ def test_cors_allows_live_vercel_frontend_origin():
     response = client.options(
         "/auth/me",
         headers={
-            "Origin": "https://doc2md-one.vercel.app",
+            "Origin": "https://markitdoc.vercel.app",
             "Access-Control-Request-Method": "GET",
             "Access-Control-Request-Headers": "authorization",
         },
     )
 
     assert response.status_code == 200
-    assert response.headers["access-control-allow-origin"] == "https://doc2md-one.vercel.app"
+    assert response.headers["access-control-allow-origin"] == "https://markitdoc.vercel.app"

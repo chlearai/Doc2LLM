@@ -182,11 +182,10 @@ def _resolve_local_dev_user(
 def _resolve_authenticated_user(user: dict, manager: ConversionManager) -> AuthenticatedUser:
     user_id = str(user["id"])
     email = str(user["email"])
-    full_name = (
-        user.get("user_metadata", {}).get("full_name")
-        if isinstance(user.get("user_metadata"), dict)
-        else None
-    )
+    metadata = user.get("user_metadata", {})
+    full_name = None
+    if isinstance(metadata, dict):
+        full_name = metadata.get("full_name") or metadata.get("name")
 
     # Fetch user profile from repository to check roles/activity.
     try:

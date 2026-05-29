@@ -1,7 +1,7 @@
 # Backend Test Report
 
-- Total: 40
-- Passed: 38
+- Total: 44
+- Passed: 42
 - Failed: 0
 - Errors: 0
 - Skipped: 2
@@ -27,6 +27,8 @@
 - `passed` tests.test_conversions_api.test_delete_conversion_marks_deleted_and_removes_markdown
 - `passed` tests.test_cors.test_cors_allows_local_frontend_origin
 - `passed` tests.test_cors.test_cors_allows_live_vercel_frontend_origin
+- `passed` tests.test_google_oauth_flow.test_google_oauth_frontend_uses_callback_redirect
+- `passed` tests.test_google_oauth_flow.test_google_oauth_profile_uses_google_name_metadata
 - `passed` tests.test_health.test_health_returns_ok
 - `passed` tests.test_health.test_openapi_has_product_metadata
 - `passed` tests.test_limiter.test_limiter_allows_active_slot_when_available
@@ -40,6 +42,8 @@
 - `passed` tests.test_settings.test_update_profile_name
 - `passed` tests.test_settings.test_change_password_validations
 - `passed` tests.test_settings.test_delete_account_removes_data_and_profile
+- `passed` tests.test_signup_redirect.test_signup_passes_frontend_origin_as_supabase_redirect
+- `passed` tests.test_signup_redirect.test_signup_redirect_falls_back_to_configured_frontend_origin
 - `passed` tests.test_startup.test_railway_start_command_uses_python_launcher
 - `passed` tests.test_startup.test_startup_launcher_reads_port_from_environment
 - `passed` tests.test_startup.test_startup_launcher_falls_back_to_railway_port

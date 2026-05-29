@@ -8,6 +8,18 @@ import { Input } from "@/components/ui/input";
 import { DEV_AUTH_COOKIE, DEV_AUTH_EMAIL, DEV_AUTH_PASSWORD, hasSupabaseEnvironment } from "@/lib/env";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { signUp } from "@/lib/api-client";
+import { buildOAuthRedirectTo } from "@/lib/oauth";
+
+function GoogleLogo() {
+  return (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18">
+      <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.35 0-4.34-1.58-5.05-3.71H.94v2.33A9 9 0 0 0 9 18Z" />
+      <path fill="#FBBC05" d="M3.95 10.71A5.41 5.41 0 0 1 3.67 9c0-.59.1-1.17.28-1.71V4.96H.94A9 9 0 0 0 0 9c0 1.45.34 2.82.94 4.04l3.01-2.33Z" />
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.42 0 9 0A9 9 0 0 0 .94 4.96l3.01 2.33C4.66 5.16 6.65 3.58 9 3.58Z" />
+    </svg>
+  );
+}
 
 function LoginForm({
   isSignUp,
@@ -25,6 +37,40 @@ function LoginForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("error") === "oauth") {
+      setError("Google sign in could not be completed. Try again or use email and password.");
+    }
+  }, [searchParams]);
+
+  async function handleGoogleSignIn() {
+    if (!hasSupabaseEnvironment()) {
+      setError("Google sign in is only available when Supabase Auth is configured.");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setError("");
+    setSuccess("");
+
+    const supabase = createSupabaseBrowserClient();
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: buildOAuthRedirectTo(searchParams.get("next") || "/dashboard"),
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (oauthError) {
+      setGoogleLoading(false);
+      setError("Google sign in could not be started. Try again or use email and password.");
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -171,11 +217,29 @@ function LoginForm({
       <Button 
         type="submit" 
         loading={loading} 
+        disabled={googleLoading}
         icon={isSignUp ? <UserPlus size={16} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
       >
         {isSignUp ? "Sign up" : "Sign in"}
       </Button>
 
+      <div className="auth-divider" aria-hidden="true">
+        <span />
+        <strong>or</strong>
+        <span />
+      </div>
+
+      <Button
+        type="button"
+        variant="secondary"
+        className="google-auth-button"
+        loading={googleLoading}
+        disabled={loading}
+        icon={<GoogleLogo />}
+        onClick={handleGoogleSignIn}
+      >
+        Continue with Google
+      </Button>
 
       <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
         <button
@@ -209,10 +273,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     try {
-      const lastBg = localStorage.getItem("doc2llm_last_bg");
+      const lastBg = localStorage.getItem("markit_last_bg");
       const nextBg = lastBg === "/bg1.png" ? "/bg2.png" : "/bg1.png";
       setBgImage(nextBg);
-      localStorage.setItem("doc2llm_last_bg", nextBg);
+      localStorage.setItem("markit_last_bg", nextBg);
     } catch (e) {
       // Fallback to random if localStorage fails
       const randomBg = Math.random() < 0.5 ? "/bg1.png" : "/bg2.png";
@@ -227,12 +291,12 @@ export default function LoginPage() {
     >
       <section className="login-panel" aria-labelledby="login-title">
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <img src="/favicon.svg" alt="" width="80" height="45" style={{ objectFit: "contain", display: "block", margin: "0 auto 12px" }} />
-          <p className="eyebrow" style={{ margin: 0 }}>Doc2LLM</p>
+          <img src="/favicon.png" alt="" width="80" height="45" style={{ objectFit: "contain", display: "block", margin: "0 auto 12px" }} />
+          <p className="eyebrow" style={{ margin: 0 }}>MarkIt</p>
         </div>
         <div>
           <h1 id="login-title" style={{ textAlign: "center" }}>
-            {isSignUp ? "Create your account" : "Sign in to Doc2LLM"}
+            {isSignUp ? "Create your account" : "Sign in to MarkIt"}
           </h1>
           <p className="login-copy" style={{ textAlign: "center" }}>
             {isSignUp 

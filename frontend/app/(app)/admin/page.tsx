@@ -5,6 +5,8 @@ import { ShieldCheck, Users, FileText, AlertTriangle, Play, CheckCircle, Refresh
 import { createApiClient } from "@/lib/api-client";
 import { getAccessToken } from "@/lib/auth-token";
 
+import { Button } from "@/components/ui/button";
+
 type Stats = {
   total_users: number;
   total_converted_files: number;
@@ -72,13 +74,13 @@ export default function AdminOverview() {
           <p className="eyebrow">Admin Portal</p>
           <h1>Overview</h1>
         </div>
-        <button 
+        <Button 
+          variant="secondary"
           onClick={loadData}
-          className="btn btn-secondary"
-          style={{ padding: "8px 16px", borderRadius: "6px", background: "var(--surface)", border: "1px solid var(--border)", cursor: "pointer" }}
+          style={{ minHeight: "36px", padding: "0 16px" }}
         >
           Refresh Data
-        </button>
+        </Button>
       </div>
 
       {error ? <p className="message error-message">{error}</p> : null}

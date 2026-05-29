@@ -69,16 +69,6 @@ export function ConversionDetailClient({ id }: { id: string }) {
     setNotice("Download started.");
   }
 
-  async function deleteConversion() {
-    setError("");
-    try {
-      await withClient((client) => client.deleteConversion(id));
-      router.replace("/history");
-      router.refresh();
-    } catch (deleteError) {
-      setError(readableError(deleteError));
-    }
-  }
 
   useEffect(() => {
     loadDetail();
@@ -128,14 +118,6 @@ export function ConversionDetailClient({ id }: { id: string }) {
             icon={<Download size={15} aria-hidden="true" />}
           >
             Download .md
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={deleteConversion}
-            icon={<Trash2 size={15} aria-hidden="true" />}
-          >
-            Delete
           </Button>
         </div>
       </div>

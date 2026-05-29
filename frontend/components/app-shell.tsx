@@ -83,9 +83,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link href={role === "admin" ? "/admin" : "/dashboard"} className="brand" aria-label="Doc2LLM home">
-          <img src="/favicon.svg" alt="" width="32" height="18" style={{ objectFit: "contain" }} />
-          <span>Doc2LLM</span>
+        <Link href={role === "admin" ? "/admin" : "/dashboard"} className="brand" aria-label="MarkIt home">
+          <img src="/favicon.png" alt="" width="32" height="18" style={{ objectFit: "contain" }} />
+          <span>MarkIt</span>
         </Link>
         <nav className="nav" aria-label="Primary navigation">
           {activeNavItems.map((item) => {
@@ -101,14 +101,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="account">
           {role === "admin" && (
-            <Link 
-              href={pathname.startsWith("/admin") ? "/dashboard" : "/admin"}
-              className="nav-link"
-              style={{ marginRight: "16px", color: "var(--color-primary-600)", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "6px" }}
-            >
-              <ShieldAlert size={16} />
-              <span>{pathname.startsWith("/admin") ? "App Mode" : "Admin Mode"}</span>
-            </Link>
+            <div className="mode-toggle-container">
+              <span className={`mode-label ${!pathname.startsWith("/admin") ? "active" : ""}`}>App Mode</span>
+              <div className="toggle-border">
+                <input 
+                  id="admin-mode-toggle" 
+                  type="checkbox" 
+                  checked={pathname.startsWith("/admin")}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      router.push("/admin");
+                    } else {
+                      router.push("/dashboard");
+                    }
+                  }}
+                />
+                <label htmlFor="admin-mode-toggle">
+                  <div className="handle"></div>
+                </label>
+              </div>
+              <span className={`mode-label ${pathname.startsWith("/admin") ? "active" : ""}`}>Admin Mode</span>
+            </div>
           )}
           <span title={accountTitle}>{accountLabel}</span>
           <Button variant="ghost" type="button" onClick={signOut} icon={<LogOut size={16} aria-hidden="true" />}>

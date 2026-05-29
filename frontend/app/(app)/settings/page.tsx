@@ -287,9 +287,9 @@ export default function SettingsPage() {
 
           {!deleteConfirm ? (
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <button
+              <Button
                 type="button"
-                className="button button-ghost"
+                variant="ghost"
                 style={{ 
                   color: "var(--error)", 
                   borderColor: "color-mix(in oklch, var(--error) 30%, var(--border))",
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                 onClick={() => setDeleteConfirm(true)}
               >
                 Delete Account
-              </button>
+              </Button>
             </div>
           ) : (
             <div 
@@ -324,14 +324,14 @@ export default function SettingsPage() {
                 >
                   Yes, delete my account
                 </Button>
-                <button
+                <Button
                   type="button"
-                  className="button button-secondary"
+                  variant="secondary"
                   onClick={() => setDeleteConfirm(false)}
                   disabled={deleteLoading}
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           )}

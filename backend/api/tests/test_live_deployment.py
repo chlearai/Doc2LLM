@@ -18,7 +18,7 @@ def _load_env_file(path: str) -> None:
 _load_env_file(".env")
 _load_env_file("../../frontend/.env")
 
-LIVE_FRONTEND_URL = os.getenv("DOC2LLM_LIVE_FRONTEND_URL", "https://doc2md-one.vercel.app").rstrip("/")
+LIVE_FRONTEND_URL = os.getenv("DOC2LLM_LIVE_FRONTEND_URL", "https://markitdoc.vercel.app").rstrip("/")
 LIVE_API_URL = os.getenv("DOC2LLM_LIVE_API_URL", "https://doc2llm-production.up.railway.app").rstrip("/")
 
 

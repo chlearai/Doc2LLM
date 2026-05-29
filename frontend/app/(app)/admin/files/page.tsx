@@ -244,25 +244,25 @@ export default function AdminFiles() {
 
       {/* Pagination controls */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>
-        <button 
+        <Button 
+          variant="secondary"
           disabled={offset === 0} 
           onClick={() => setOffset(Math.max(0, offset - limit))}
-          className="btn btn-secondary"
-          style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--surface)", opacity: offset === 0 ? 0.5 : 1, cursor: offset === 0 ? "default" : "pointer" }}
+          style={{ minHeight: "36px", padding: "0 16px" }}
         >
           Previous
-        </button>
+        </Button>
         <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
           Page {Math.floor(offset / limit) + 1}
         </span>
-        <button 
+        <Button 
+          variant="secondary"
           disabled={files.length < limit} 
           onClick={() => setOffset(offset + limit)}
-          className="btn btn-secondary"
-          style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--surface)", opacity: files.length < limit ? 0.5 : 1, cursor: files.length < limit ? "default" : "pointer" }}
+          style={{ minHeight: "36px", padding: "0 16px" }}
         >
           Next
-        </button>
+        </Button>
       </div>
     </section>
   );
