@@ -16,3 +16,19 @@ def test_cors_allows_local_frontend_origin():
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:3001"
+
+
+def test_cors_allows_live_vercel_frontend_origin():
+    client = TestClient(app)
+
+    response = client.options(
+        "/auth/me",
+        headers={
+            "Origin": "https://doc2md-one.vercel.app",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://doc2md-one.vercel.app"

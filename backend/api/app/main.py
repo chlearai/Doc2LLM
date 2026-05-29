@@ -45,7 +45,6 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-frontend_origin = os.getenv("FRONTEND_ORIGIN")
 allowed_origins = [
     "http://localhost:3000",
     "http://localhost:3001",
@@ -53,9 +52,12 @@ allowed_origins = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
+    "https://doc2md-one.vercel.app",
 ]
-if frontend_origin:
-    allowed_origins.append(frontend_origin)
+for origins_value in (os.getenv("FRONTEND_ORIGIN"), os.getenv("FRONTEND_ORIGINS")):
+    if origins_value:
+        allowed_origins.extend(origin.strip().rstrip("/") for origin in origins_value.split(",") if origin.strip())
+allowed_origins = list(dict.fromkeys(allowed_origins))
 
 app.add_middleware(
     CORSMiddleware,
