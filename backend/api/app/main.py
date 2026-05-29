@@ -53,11 +53,37 @@ allowed_origins = [
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
     "https://doc2md-one.vercel.app",
+    "https://markitdoc.vercel.app",
 ]
 for origins_value in (os.getenv("FRONTEND_ORIGIN"), os.getenv("FRONTEND_ORIGINS")):
     if origins_value:
         allowed_origins.extend(origin.strip().rstrip("/") for origin in origins_value.split(",") if origin.strip())
 allowed_origins = list(dict.fromkeys(allowed_origins))
+
+
+def _frontend_origins_from_env() -> list[str]:
+    origins: list[str] = []
+    for origins_value in (os.getenv("FRONTEND_ORIGIN"), os.getenv("FRONTEND_ORIGINS")):
+        if origins_value:
+            origins.extend(origin.strip().rstrip("/") for origin in origins_value.split(",") if origin.strip())
+    return list(dict.fromkeys(origins))
+
+
+def _resolve_signup_redirect_to(request: Request) -> str:
+    request_origin = request.headers.get("origin", "").rstrip("/")
+    if request_origin in allowed_origins:
+        return request_origin
+
+    configured_origins = _frontend_origins_from_env()
+    if configured_origins:
+        return configured_origins[0]
+
+    for origin in allowed_origins:
+        if origin.startswith("https://"):
+            return origin
+
+    return allowed_origins[0]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -98,7 +124,7 @@ def health() -> dict[str, str]:
     tags=["auth"],
     summary="Sign up a new user via Supabase Auth",
 )
-async def signup(body: UserSignupRequest) -> dict[str, str]:
+async def signup(body: UserSignupRequest, request: Request) -> dict[str, str]:
     # 1. Validation: email regex
     email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     if not re.match(email_regex, body.email):
@@ -120,6 +146,7 @@ async def signup(body: UserSignupRequest) -> dict[str, str]:
         return {"message": "Account created successfully (local dev mock)! Check email."}
 
     signup_url = f"{supabase_url}/auth/v1/signup"
+    redirect_to = _resolve_signup_redirect_to(request)
     headers = {
         "apikey": service_role_key,
         "Authorization": f"Bearer {service_role_key}",
@@ -135,7 +162,13 @@ async def signup(body: UserSignupRequest) -> dict[str, str]:
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(signup_url, headers=headers, json=payload, timeout=10.0)
+            response = await client.post(
+                signup_url,
+                headers=headers,
+                json=payload,
+                params={"redirect_to": redirect_to},
+                timeout=10.0,
+            )
             if response.status_code != 200:
                 try:
                     err_data = response.json()

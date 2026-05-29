@@ -20,6 +20,7 @@ Required variables:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_API_BASE_URL=
+NEXT_PUBLIC_APP_URL=
 ```
 
 Notes:
@@ -27,6 +28,7 @@ Notes:
 - `NEXT_PUBLIC_SUPABASE_URL` is safe for the browser.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` is safe for the browser when Row Level Security and backend ownership checks are correct.
 - `NEXT_PUBLIC_API_BASE_URL` points to the FastAPI backend.
+- `NEXT_PUBLIC_APP_URL` is the deployed frontend origin used as an OAuth redirect fallback. In production, set it to the Vercel URL, for example `https://markitdoc.vercel.app`.
 - Do not put the Supabase service-role key in frontend env files.
 
 ## Backend Environment

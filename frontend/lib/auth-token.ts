@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from "./supabase-browser";
 export async function getAccessToken() {
   if (!hasSupabaseEnvironment()) {
     const isDevAdmin = typeof document !== "undefined" && 
-      document.cookie.split(";").some((c) => c.trim() === "doc2llm_dev_auth=admin");
+      document.cookie.split(";").some((c) => c.trim() === "markit_dev_auth=admin");
     return isDevAdmin ? "local-admin-token" : "local-dev-token";
   }
 
