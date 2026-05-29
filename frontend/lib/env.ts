@@ -7,7 +7,19 @@ export function getSupabaseAnonKey() {
 }
 
 export function getApiBaseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const value = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (
+    trimmed.startsWith("localhost") ||
+    trimmed.startsWith("127.") ||
+    trimmed.startsWith("[::1]")
+  ) {
+    return `http://${trimmed}`;
+  }
+  return `https://${trimmed}`;
 }
 
 export function hasSupabaseEnvironment() {
@@ -19,4 +31,3 @@ export const DEV_AUTH_PASSWORD = "markdown-dev";
 export const DEV_AUTH_COOKIE = "doc2llm_dev_auth";
 export const DEV_ADMIN_EMAIL = "admin@local.test";
 export const DEV_ADMIN_PASSWORD = "markdown-admin";
-
