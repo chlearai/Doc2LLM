@@ -16,6 +16,14 @@ def test_startup_launcher_reads_port_from_environment(monkeypatch) -> None:
     assert start.get_port() == 4321
 
 
+def test_startup_launcher_falls_back_to_railway_port(monkeypatch) -> None:
+    monkeypatch.delenv("PORT", raising=False)
+    monkeypatch.setenv("RAILWAY_PORT", "8765")
+    start = importlib.import_module("start")
+
+    assert start.get_port() == 8765
+
+
 def test_railway_requirements_include_runtime_server() -> None:
     with open("requirements.txt", encoding="utf-8") as requirements_file:
         requirements = requirements_file.read()

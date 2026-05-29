@@ -1,7 +1,7 @@
 # Backend Test Report
 
-- Total: 39
-- Passed: 37
+- Total: 40
+- Passed: 38
 - Failed: 0
 - Errors: 0
 - Skipped: 2
@@ -42,6 +42,7 @@
 - `passed` tests.test_settings.test_delete_account_removes_data_and_profile
 - `passed` tests.test_startup.test_railway_start_command_uses_python_launcher
 - `passed` tests.test_startup.test_startup_launcher_reads_port_from_environment
+- `passed` tests.test_startup.test_startup_launcher_falls_back_to_railway_port
 - `passed` tests.test_startup.test_railway_requirements_include_runtime_server
 - `passed` tests.test_validators.test_validate_upload_metadata_accepts_supported_text_file
 - `passed` tests.test_validators.test_validate_upload_metadata_rejects_empty_file
