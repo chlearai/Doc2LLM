@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEV_AUTH_COOKIE, DEV_AUTH_EMAIL, DEV_AUTH_PASSWORD, hasSupabaseEnvironment } from "@/lib/env";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { signUp } from "@/lib/api-client";
 
 function LoginForm({
   isSignUp,
@@ -19,6 +20,8 @@ function LoginForm({
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,9 +31,44 @@ function LoginForm({
     const formData = new FormData(event.currentTarget);
     const submittedEmail = String(formData.get("email") ?? "").trim();
     const submittedPassword = String(formData.get("password") ?? "");
+    const submittedFullName = String(formData.get("fullName") ?? "").trim();
+    const submittedConfirmPassword = String(formData.get("confirmPassword") ?? "");
+    
     setLoading(true);
     setError("");
     setSuccess("");
+
+    // Email validation regex check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(submittedEmail)) {
+      setLoading(false);
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    // Password validations (letters and numbers)
+    if (isSignUp) {
+      if (!submittedFullName) {
+        setLoading(false);
+        setError("Please enter your full name.");
+        return;
+      }
+      if (submittedPassword.length < 8) {
+        setLoading(false);
+        setError("Password must be at least 8 characters long.");
+        return;
+      }
+      if (!/[a-zA-Z]/.test(submittedPassword) || !/[0-9]/.test(submittedPassword)) {
+        setLoading(false);
+        setError("Password must contain both letters and numbers.");
+        return;
+      }
+      if (submittedPassword !== submittedConfirmPassword) {
+        setLoading(false);
+        setError("Passwords do not match.");
+        return;
+      }
+    }
 
     if (!hasSupabaseEnvironment()) {
       setLoading(false);
@@ -54,27 +92,21 @@ function LoginForm({
       return;
     }
 
-    const supabase = createSupabaseBrowserClient();
-
     if (isSignUp) {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: submittedEmail,
-        password: submittedPassword,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      setLoading(false);
-
-      if (signUpError) {
-        setError(signUpError.message || "Registration failed. Try again.");
-        return;
+      try {
+        await signUp(submittedEmail, submittedPassword, submittedFullName);
+        setSuccess("Account created! Check your email for a confirmation link.");
+        setFullName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      } catch (err: any) {
+        setError(err.message || "Registration failed. Try again.");
+      } finally {
+        setLoading(false);
       }
-
-      setSuccess("Account created! Check your email for a confirmation link.");
-      setEmail("");
-      setPassword("");
     } else {
+      const supabase = createSupabaseBrowserClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: submittedEmail,
         password: submittedPassword,
@@ -93,6 +125,16 @@ function LoginForm({
 
   return (
     <form className="login-form" onSubmit={handleSubmit}>
+      {isSignUp && (
+        <Input
+          label="Full Name"
+          name="fullName"
+          type="text"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          required
+        />
+      )}
       <Input
         label="Email"
         name="email"
@@ -109,10 +151,21 @@ function LoginForm({
         autoComplete={isSignUp ? "new-password" : "current-password"}
         value={password}
         onChange={(event) => setPassword(event.target.value)}
-        error={error}
         required
       />
+      {isSignUp && (
+        <Input
+          label="Confirm Password"
+          name="confirmPassword"
+          type="password"
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          error={error}
+          required
+        />
+      )}
       
+      {!isSignUp && error ? <p className="message error-message">{error}</p> : null}
       {success ? <p className="message success-message">{success}</p> : null}
 
       <Button 
@@ -122,6 +175,7 @@ function LoginForm({
       >
         {isSignUp ? "Sign up" : "Sign in"}
       </Button>
+
 
       <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
         <button

@@ -27,7 +27,8 @@ const adminNavItems = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [email, setEmail] = useState<string>("Loading account");
+  const [accountLabel, setAccountLabel] = useState<string>("Loading account");
+  const [accountTitle, setAccountTitle] = useState<string>("Loading account");
   const [role, setRole] = useState<string>("user");
 
   useEffect(() => {
@@ -35,12 +36,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       try {
         const token = await getAccessToken();
         if (!token) {
-          setEmail("Not signed in");
+          setAccountLabel("Not signed in");
+          setAccountTitle("Not signed in");
           return;
         }
         const client = createApiClient(token);
         const profile = await client.me();
-        setEmail(profile.email);
+        const name = profile.full_name?.trim() || profile.email;
+        setAccountLabel(`Hello, ${name}`);
+        setAccountTitle(profile.email);
         setRole(profile.role);
         
         // Client-side role protection: if on /admin but not admin, redirect to /dashboard
@@ -50,9 +54,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error("Failed to load user profile", err);
         if (!hasSupabaseEnvironment()) {
-          setEmail(DEV_AUTH_EMAIL);
+          setAccountLabel(`Hello, ${DEV_AUTH_EMAIL}`);
+          setAccountTitle(DEV_AUTH_EMAIL);
         } else {
-          setEmail("Signed in");
+          setAccountLabel("Hello, signed in");
+          setAccountTitle("Signed in");
         }
       }
     }
@@ -104,7 +110,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span>{pathname.startsWith("/admin") ? "App Mode" : "Admin Mode"}</span>
             </Link>
           )}
-          <span title={email}>{email}</span>
+          <span title={accountTitle}>{accountLabel}</span>
           <Button variant="ghost" type="button" onClick={signOut} icon={<LogOut size={16} aria-hidden="true" />}>
             Sign out
           </Button>

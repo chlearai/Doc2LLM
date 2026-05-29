@@ -19,6 +19,10 @@ export default function AdminConversions() {
   const [offset, setOffset] = useState(0);
   const limit = 10;
 
+  function getOwnerLabel(conversion: Conversion) {
+    return conversion.user_full_name?.trim() || conversion.user_email || conversion.user_id || "Unknown user";
+  }
+
   async function loadConversions(currentSearch = search, currentStatus = statusFilter, currentOffset = offset) {
     setLoading(true);
     setError("");
@@ -164,7 +168,7 @@ export default function AdminConversions() {
                   <td style={{ padding: "12px" }}>
                     <div style={{ display: "flex", flexDirection: "column" }}>
                       <span style={{ fontWeight: 600 }}>{conv.original_file_name}</span>
-                      <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>User: {conv.user_id}</span>
+                      <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>User: {getOwnerLabel(conv)}</span>
                     </div>
                   </td>
                   <td style={{ padding: "12px" }}>
