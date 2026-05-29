@@ -184,6 +184,7 @@ export default function SettingsPage() {
             value={email}
             disabled
             hint="Email cannot be changed."
+            reserveHintSpace
           />
           <Input
             label="Full Name"
@@ -192,6 +193,7 @@ export default function SettingsPage() {
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Your full name"
             required
+            reserveHintSpace
           />
         </div>
 
@@ -227,6 +229,7 @@ export default function SettingsPage() {
             placeholder="At least 8 characters"
             required
             hint="Must contain both letters and numbers."
+            reserveHintSpace
           />
           <Input
             label="Confirm New Password"
@@ -235,6 +238,7 @@ export default function SettingsPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Repeat new password"
             required
+            reserveHintSpace
           />
         </div>
 
