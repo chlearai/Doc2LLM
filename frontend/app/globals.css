@@ -85,7 +85,9 @@ textarea {
   display: grid;
   place-items: center;
   padding: 32px 18px;
-  background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.45)), url('/background.jpg') no-repeat center center;
+  background-color: oklch(0.15 0.02 250);
+  background-repeat: no-repeat;
+  background-position: center center;
   background-size: cover;
 }
 

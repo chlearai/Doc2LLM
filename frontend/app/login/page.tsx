@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogIn, UserPlus } from "lucide-react";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEV_AUTH_COOKIE, DEV_AUTH_EMAIL, DEV_AUTH_PASSWORD, hasSupabaseEnvironment } from "@/lib/env";
@@ -205,9 +205,26 @@ function LoginForm({
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [bgImage, setBgImage] = useState<string>("");
+
+  useEffect(() => {
+    try {
+      const lastBg = localStorage.getItem("doc2llm_last_bg");
+      const nextBg = lastBg === "/bg1.png" ? "/bg2.png" : "/bg1.png";
+      setBgImage(nextBg);
+      localStorage.setItem("doc2llm_last_bg", nextBg);
+    } catch (e) {
+      // Fallback to random if localStorage fails
+      const randomBg = Math.random() < 0.5 ? "/bg1.png" : "/bg2.png";
+      setBgImage(randomBg);
+    }
+  }, []);
 
   return (
-    <main className="login-page">
+    <main 
+      className="login-page"
+      style={bgImage ? { backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.45)), url('${bgImage}')` } : undefined}
+    >
       <section className="login-panel" aria-labelledby="login-title">
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <img src="/favicon.svg" alt="" width="80" height="45" style={{ objectFit: "contain", display: "block", margin: "0 auto 12px" }} />
