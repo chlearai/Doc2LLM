@@ -66,6 +66,18 @@ class ConversionListResponse(BaseModel):
     offset: int
 
 
+class AdminConversionDetailResponse(ConversionDetailResponse):
+    user_id: str
+    user_email: str | None = None
+    user_full_name: str | None = None
+
+
+class AdminConversionListResponse(BaseModel):
+    items: list[AdminConversionDetailResponse]
+    limit: int
+    offset: int
+
+
 class ConversionStatusResponse(BaseModel):
     id: str
     status: ConversionStatus
@@ -152,4 +164,19 @@ class AdminSystemHealthResponse(BaseModel):
     supabase_connection: SystemHealthIndicator
     conversion_queue: SystemHealthIndicator
     storage_write: SystemHealthIndicator
+
+
+class UserSignupRequest(BaseModel):
+    email: str
+    password: str
+    full_name: str
+
+
+class UpdateProfileRequest(BaseModel):
+    full_name: str
+
+
+class ChangePasswordRequest(BaseModel):
+    password: str
+
 

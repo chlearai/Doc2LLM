@@ -77,6 +77,39 @@ def test_admin_dashboard_stats_and_health(tmp_path):
     _clear_overrides()
 
 
+def test_admin_stats_uses_repository_interface_without_private_in_memory_state(tmp_path):
+    manager = ConversionManager.for_tests(temp_root=tmp_path / "tmp")
+
+    class SupabaseStyleRepository:
+        def count_users(self):
+            return 3
+
+        def count_conversions(self, *, status=None, completed_from=None):
+            if status == "FAILED":
+                return 1
+            if completed_from is not None:
+                return 2
+            return 5
+
+    manager.repository = SupabaseStyleRepository()
+    app.dependency_overrides[get_current_user] = _admin
+    app.dependency_overrides[get_conversion_manager] = lambda: manager
+    client = TestClient(app)
+
+    response = client.get("/admin/stats")
+
+    _clear_overrides()
+    assert response.status_code == 200
+    assert response.json() == {
+        "total_users": 3,
+        "total_converted_files": 5,
+        "files_processed_today": 2,
+        "failed_conversions": 1,
+        "pending_conversions": 0,
+        "system_health": "Healthy",
+    }
+
+
 def test_admin_user_management(tmp_path):
     manager = ConversionManager.for_tests(temp_root=tmp_path / "tmp")
     app.dependency_overrides[get_current_user] = _admin
@@ -145,6 +178,9 @@ def test_admin_conversion_and_job_management(tmp_path):
     conversions = list_resp.json()["items"]
     assert len(conversions) == 1
     assert conversions[0]["original_file_name"] == "admin_test.txt"
+    assert conversions[0]["user_id"] == "11111111-1111-4111-8111-111111111111"
+    assert conversions[0]["user_email"] == "dev@local.test"
+    assert conversions[0]["user_full_name"] == "Local Developer"
 
     # 2. Cancel conversion
     cancel_resp = client.post(f"/admin/conversions/{record.id}/cancel")

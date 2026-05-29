@@ -1,13 +1,18 @@
 import os
+import re
+import httpx
 from uuid import uuid4
 from datetime import UTC, datetime
-from fastapi import Depends, FastAPI, File, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Header, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.auth import AuthenticatedUser, get_current_user
 from app.dependencies import get_conversion_manager
 from app.errors import api_error
 from app.models import (
+    AdminConversionDetailResponse,
+    AdminConversionListResponse,
     ConversionDetailResponse,
     ConversionListResponse,
     ConversionResponse,
@@ -25,6 +30,9 @@ from app.models import (
     AdminLogListResponse,
     AdminSystemHealthResponse,
     SystemHealthIndicator,
+    UserSignupRequest,
+    UpdateProfileRequest,
+    ChangePasswordRequest,
 )
 from app.services import ConversionManager
 
@@ -58,9 +66,89 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    print(f"Unhandled API error on {request.method} {request.url.path}: {str(exc)}", flush=True)
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin in allowed_origins:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    return JSONResponse(
+        status_code=500,
+        headers=headers,
+        content={
+            "detail": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "The API could not complete the request. Check the backend logs and try again.",
+            }
+        },
+    )
+
+
 @app.get("/health", tags=["health"], summary="Check API health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post(
+    "/auth/signup",
+    tags=["auth"],
+    summary="Sign up a new user via Supabase Auth",
+)
+async def signup(body: UserSignupRequest) -> dict[str, str]:
+    # 1. Validation: email regex
+    email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not re.match(email_regex, body.email):
+        raise api_error(400, "BAD_REQUEST", "Please enter a valid email address.")
+
+    # 2. Validation: password strength (both letters and numbers, >= 8 chars)
+    if len(body.password) < 8:
+        raise api_error(400, "BAD_REQUEST", "Password must be at least 8 characters long.")
+    if not re.search(r"[a-zA-Z]", body.password) or not re.search(r"[0-9]", body.password):
+        raise api_error(400, "BAD_REQUEST", "Password must contain both letters and numbers.")
+
+    if not body.full_name.strip():
+        raise api_error(400, "BAD_REQUEST", "Please enter your full name.")
+
+    # 3. Proxy to Supabase Auth Signup
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    if not supabase_url or not service_role_key or body.email.endswith(".test"):
+        return {"message": "Account created successfully (local dev mock)! Check email."}
+
+    signup_url = f"{supabase_url}/auth/v1/signup"
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "email": body.email,
+        "password": body.password,
+        "data": {
+            "full_name": body.full_name
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(signup_url, headers=headers, json=payload, timeout=10.0)
+            if response.status_code != 200:
+                try:
+                    err_data = response.json()
+                    err_msg = (
+                        err_data.get("msg")
+                        or err_data.get("message")
+                        or err_data.get("error_description")
+                        or "Supabase Auth signup failed."
+                    )
+                except Exception:
+                    err_msg = response.text or "Supabase Auth signup failed."
+                raise api_error(response.status_code, "BAD_REQUEST", err_msg)
+            return {"message": "Account created! Check your email for a confirmation link."}
+    except httpx.RequestError as e:
+        raise api_error(500, "EXTERNAL_API_ERROR", f"Failed to contact Supabase Auth API: {str(e)}")
 
 
 @app.get(
@@ -76,6 +164,131 @@ def auth_me(user: AuthenticatedUser = Depends(get_current_user)) -> UserProfileR
         full_name=user.full_name,
         role=user.role,
     )
+
+
+@app.put(
+    "/auth/me",
+    response_model=UserProfileResponse,
+    tags=["auth"],
+    summary="Update the authenticated user's profile metadata",
+)
+def update_profile(
+    body: UpdateProfileRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    manager: ConversionManager = Depends(get_conversion_manager),
+) -> UserProfileResponse:
+    if not body.full_name.strip():
+        raise api_error(400, "BAD_REQUEST", "Please enter your full name.")
+    
+    updated = manager.repository.update_user_profile(user.id, body.full_name.strip())
+    if not updated:
+        raise api_error(404, "NOT_FOUND", "User profile not found.")
+        
+    return UserProfileResponse(
+        id=updated.id,
+        email=updated.email,
+        full_name=updated.full_name,
+        role=updated.role,
+    )
+
+
+@app.post(
+    "/auth/change-password",
+    tags=["auth"],
+    summary="Change the password for the authenticated user",
+)
+async def change_password(
+    body: ChangePasswordRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    authorization: str | None = Header(default=None),
+) -> dict[str, str]:
+    # Validation: password strength (both letters and numbers, >= 8 chars)
+    if len(body.password) < 8:
+        raise api_error(400, "BAD_REQUEST", "Password must be at least 8 characters long.")
+    if not re.search(r"[a-zA-Z]", body.password) or not re.search(r"[0-9]", body.password):
+        raise api_error(400, "BAD_REQUEST", "Password must contain both letters and numbers.")
+
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise api_error(401, "UNAUTHORIZED", "Missing user access token.")
+    user_token = authorization.removeprefix("Bearer ").strip()
+
+    if not supabase_url or not service_role_key or user_token in ("local-dev-token", "local-admin-token") or user.email.endswith(".test"):
+        return {"message": "Password changed successfully (local dev mock)!"}
+
+    update_url = f"{supabase_url}/auth/v1/user"
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {user_token}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "password": body.password,
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.put(update_url, headers=headers, json=payload, timeout=10.0)
+            if response.status_code != 200:
+                try:
+                    err_data = response.json()
+                    err_msg = err_data.get("msg") or err_data.get("error_description") or "Password change failed."
+                except Exception:
+                    err_msg = response.text or "Password change failed."
+                raise api_error(response.status_code, "BAD_REQUEST", err_msg)
+            return {"message": "Password changed successfully."}
+    except httpx.RequestError as e:
+        raise api_error(500, "EXTERNAL_API_ERROR", f"Failed to contact Supabase Auth API: {str(e)}")
+
+
+@app.delete(
+    "/auth/account",
+    tags=["auth"],
+    summary="Delete user account and all associated data",
+)
+async def delete_account(
+    user: AuthenticatedUser = Depends(get_current_user),
+    manager: ConversionManager = Depends(get_conversion_manager)
+) -> dict[str, str]:
+    # 1. Delete all user conversions from storage
+    conversions = manager.repository.list_for_user(user.id, limit=100)
+    for record in conversions:
+        if record.markdown_storage_path:
+            try:
+                manager.storage.delete(record.markdown_storage_path)
+            except Exception:
+                pass
+
+    # 2. Delete the profile record (cascades to conversions and logs)
+    manager.repository.delete_user(user.id)
+
+    # 3. Call Supabase Auth Admin API to delete the auth user
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    if not supabase_url or not service_role_key or user.email.endswith(".test"):
+        return {"message": "Account deleted successfully (local dev mock)!"}
+
+    delete_url = f"{supabase_url}/auth/v1/admin/users/{user.id}"
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(delete_url, headers=headers, timeout=10.0)
+            if response.status_code not in (200, 404):
+                try:
+                    err_data = response.json()
+                    err_msg = err_data.get("msg") or err_data.get("error_description") or "Supabase Auth delete failed."
+                except Exception:
+                    err_msg = response.text or "Supabase Auth delete failed."
+                raise api_error(response.status_code, "BAD_REQUEST", err_msg)
+            return {"message": "Account deleted successfully."}
+    except httpx.RequestError as e:
+        raise api_error(500, "EXTERNAL_API_ERROR", f"Failed to contact Supabase Auth API: {str(e)}")
 
 
 @app.post(
@@ -250,18 +463,12 @@ def get_admin_stats(
     manager: ConversionManager = Depends(get_conversion_manager)
 ) -> AdminStatsResponse:
     repo = manager.repository
-    total_users = len(repo._profiles)
-    total_conversions = sum(1 for r in repo._records.values() if r.status != "DELETED")
-    
-    # Processed today
     now = datetime.now(UTC)
-    processed_today = 0
-    for r in repo._records.values():
-        if r.status != "DELETED" and r.completed_at:
-            if r.completed_at.date() == now.date():
-                processed_today += 1
-                
-    failed_conversions = sum(1 for r in repo._records.values() if r.status == "FAILED")
+    today_start = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    total_users = repo.count_users()
+    total_conversions = repo.count_conversions()
+    processed_today = repo.count_conversions(completed_from=today_start)
+    failed_conversions = repo.count_conversions(status="FAILED")
     pending_conversions = manager.limiter.pending_count
     
     return AdminStatsResponse(
@@ -399,7 +606,7 @@ def update_admin_user_role(
 
 @app.get(
     "/admin/conversions",
-    response_model=ConversionListResponse,
+    response_model=AdminConversionListResponse,
     tags=["admin"],
     dependencies=[Depends(verify_admin)],
     summary="List all users' conversions",
@@ -421,8 +628,19 @@ def list_admin_conversions(
         limit=limit,
         offset=offset
     )
-    return ConversionListResponse(
-        items=[ConversionDetailResponse(**r.model_dump()) for r in records],
+    profiles_by_id = manager.repository.get_users_by_ids({record.user_id for record in records})
+    items = []
+    for record in records:
+        profile = profiles_by_id.get(record.user_id)
+        items.append(
+            AdminConversionDetailResponse(
+                **record.model_dump(),
+                user_email=profile.email if profile else None,
+                user_full_name=profile.full_name if profile else None,
+            )
+        )
+    return AdminConversionListResponse(
+        items=items,
         limit=limit,
         offset=offset
     )
@@ -524,4 +742,3 @@ def get_admin_system_health() -> AdminSystemHealthResponse:
         conversion_queue=SystemHealthIndicator(status="Healthy"),
         storage_write=SystemHealthIndicator(status="Healthy"),
     )
-

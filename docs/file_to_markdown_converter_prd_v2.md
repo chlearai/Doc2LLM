@@ -489,10 +489,31 @@ User previews/copies/downloads Markdown
 
 ---
 
-## 21. Additional Scope: Sign-Up Flow & Admin Dashboard
+## 21. Additional Scope: Sign-Up Flow, Settings, CORS & Admin Dashboard
 
-### Supabase Sign-Up Flow Trigger
-The sign-up flow is configured directly through Supabase Auth on the frontend. When a new user registers, a PostgreSQL trigger automatically captures the event in `auth.users` and synchronizes user data to the public `profiles` table. This keeps the sign-up flow simple and decoupled from direct backend APIs.
+### Sign-Up Flow & Validation Rules
+The sign-up flow validates user credentials before calling Supabase Auth:
+- **Full Name**: Required field, synced via Supabase metadata and PostgreSQL trigger.
+- **Confirm Password**: Form includes verification that the confirm password matches the new password.
+- **Password Strength**: Requires a minimum of 8 characters containing both letters and numbers. This complexity constraint is enforced on both the frontend form and backend API.
+- **Email Validation**: Standard RFC-compliant email regex checks must pass on both the frontend and backend.
+- **Supabase Auth Integration**: Upon verification, the backend forwards the credentials to Supabase Auth which sends a verification link to confirm registration.
+
+### CORS Security Specification
+CORS middleware is active across all environments:
+- **Allowed Origins**: Configured dynamically via `FRONTEND_ORIGIN` env variable, defaulting to localhost ports (3000, 3001, 3002).
+- **Credentials**: Allowed (`allow_credentials=True` on backend).
+- **Headers & Methods**: Standard HTTP verbs (GET, POST, PUT, DELETE, OPTIONS) and standard headers are allowed.
+
+### User Settings Portal
+Authenticated users can manage their accounts through the `/settings` route:
+- **Email Address**: Read-only field.
+- **Full Name Update**: Can edit and save changes to their display name.
+- **Password Update**: Can submit a password change with complexity checks (letters/numbers, >= 8 characters).
+- **Danger Zone / Account Deletion**: Users can delete their profile. This triggers:
+  1. Deletion of the user's converted Markdown output files from Supabase Storage.
+  2. Cascade deletion of database profiles, conversions, and logs.
+  3. API-driven deletion of the user from Supabase Auth via the Admin API.
 
 ### Admin Dashboard MVP
 An internal admin interface is provided at `/admin` to enable system administration, user management, and health checks:
@@ -501,4 +522,5 @@ An internal admin interface is provided at `/admin` to enable system administrat
 - **User Administration**: Listing all registered users, dynamic active/inactive status toggles, user role changes, and search functionality.
 - **File & Job Audits**: Inspecting converted outputs across users, cancel stuck conversions, trigger simulated retries, and delete records permanently.
 - **Logs Browser**: Centralized interface to view info/warning/error conversion logs.
+
 
