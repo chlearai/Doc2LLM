@@ -187,3 +187,26 @@ Use Supabase Storage for `.md` files.
 Use Supabase Postgres for metadata and storage paths.
 Use Railway temp storage only during conversion.
 ```
+
+---
+
+## 9. Security & Account Control Architecture
+
+### CORS Security Layer
+The FastAPI backend acts as an authenticated resource server. To prevent cross-origin request forgery (CSRF) and enforce browser-level security policies:
+1. Every preflight request (`OPTIONS`) is handled by FastAPI CORSMiddleware.
+2. Only requests originating from the configured `FRONTEND_ORIGIN` (or development local hosts) containing valid bearer JWT credentials are allowed to pass through to endpoints.
+
+### Account Deletion Data Flow
+To respect privacy and storage cleanliness, account deletion uses a coordinated cascade:
+```txt
+1. User clicks "Yes, delete my account" in Settings UI.
+2. Next.js calls DELETE /auth/account route.
+3. Backend fetches user's file conversion history.
+4. Backend executes object deletion calls to Supabase Storage for all output.md objects.
+5. Backend deletes the user's Profile record in Supabase Postgres.
+6. Foreign key cascades (ON DELETE CASCADE) automatically drop all Conversions and Logs rows.
+7. Backend issues an Admin API call to Supabase Auth using the service role key to delete the user credentials.
+8. Client clears local cookies/tokens and redirects to /login.
+```
+

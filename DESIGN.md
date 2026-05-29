@@ -2,7 +2,7 @@
 
 ## Design Direction
 
-Create a minimal, premium, calm product UI for an internal file-to-Markdown dashboard.
+Create a minimal, premium, calm product UI for an internal Doc2LLM dashboard.
 
 This is a task-first SaaS dashboard, not a marketing site. The interface should feel quiet, precise, and trustworthy.
 

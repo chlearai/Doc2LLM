@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the application data model for the File-to-Markdown dashboard.
+This document defines the application data model for the Doc2LLM dashboard.
 
 The database stores users, conversion metadata, and conversion logs. It does not store uploaded source documents and does not store source document binary data.
 

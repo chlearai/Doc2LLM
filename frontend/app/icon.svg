@@ -1,0 +1,66 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueWing" x1="355" y1="205" x2="745" y2="715" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7FB1EA"/>
+      <stop offset="1" stop-color="#4F86C6"/>
+    </linearGradient>
+    <linearGradient id="blackWing" x1="885" y1="205" x2="1225" y2="715" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A3640"/>
+      <stop offset="1" stop-color="#111820"/>
+    </linearGradient>
+    <linearGradient id="pen" x1="705" y1="125" x2="850" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F6EA6"/>
+      <stop offset="1" stop-color="#0D3E70"/>
+    </linearGradient>
+    <filter id="shadow" x="285" y="95" width="970" height="730" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#020617" flood-opacity="0.20"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="transparent"/>
+
+  <g filter="url(#shadow)">
+    <!-- LEFT WING: source document -->
+    <path d="M386 205H603L744 346V672C744 696 725 715 701 715H386C362 715 343 696 343 672V248C343 224 362 205 386 205Z" fill="url(#blueWing)"/>
+    <path d="M603 205V302C603 326 623 346 647 346H744L603 205Z" fill="#86B8EF"/>
+    <path d="M603 205V302C603 326 623 346 647 346H744" stroke="#E7F1FB" stroke-width="15" stroke-linejoin="round" opacity="0.78"/>
+
+    <path d="M446 386C493 363 533 408 584 386" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+    <path d="M446 431C513 402 565 455 650 427" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+    <path d="M446 494C526 462 585 517 650 496" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+    <path d="M446 538C515 505 575 555 650 538" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+    <path d="M446 585C520 554 577 601 650 583" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+    <path d="M446 631C526 598 578 646 650 629" stroke="#DCEBFA" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- CENTER PEN / BUTTERFLY BODY -->
+    <path d="M690 140C744 167 780 222 790 303" stroke="url(#pen)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M906 140C852 167 816 222 806 303" stroke="url(#pen)" stroke-width="14" stroke-linecap="round"/>
+    <ellipse cx="682" cy="135" rx="23" ry="15" transform="rotate(25 682 135)" fill="#275E91"/>
+    <ellipse cx="914" cy="135" rx="23" ry="15" transform="rotate(-25 914 135)" fill="#275E91"/>
+    <circle cx="798" cy="306" r="34" fill="#1F5A8D"/>
+    <path d="M772 348C772 333 784 321 799 321C814 321 826 333 826 348V632H772V348Z" fill="url(#pen)"/>
+    <path d="M772 500L799 560L826 500V632H772V500Z" fill="#F8FAFC" opacity="0.92"/>
+    <path d="M772 638H826L802 744C800 753 788 753 786 744L772 638Z" fill="#0D3E70"/>
+    <path d="M786 638L799 744" stroke="#E8F1FA" stroke-width="6"/>
+    <circle cx="799" cy="686" r="10" fill="#D9E7F4"/>
+
+    <!-- RIGHT WING: corrected so it no longer overlaps the center body -->
+    <path d="M915 205H1184C1208 205 1227 224 1227 248V672C1227 696 1208 715 1184 715H950C897 715 855 673 855 620V388C855 360 866 334 887 314L915 289V205Z" fill="url(#blackWing)"/>
+
+    <!-- fold / spine -->
+    <path d="M967 206V714" stroke="#D8E0EA" stroke-width="14" opacity="0.72"/>
+
+    <!-- right text strokes -->
+    <path d="M1036 270H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+    <path d="M1036 316H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+    <path d="M1036 362H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+    <path d="M1036 590H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+    <path d="M1036 635H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+    <path d="M1036 678H1158" stroke="#F1F5F9" stroke-width="13" stroke-linecap="round"/>
+
+    <!-- Markdown badge shifted slightly right so everything sits cleanly inside the wing -->
+    <rect x="904" y="392" width="262" height="154" rx="18" fill="#F8FAFC" opacity="0.94"/>
+    <path d="M937 512V422H972L1001 466L1030 422H1065V512H1027V475L1001 505L975 475V512H937Z" fill="#1F2933"/>
+    <path d="M1117 422V473H1151L1111 522L1071 473H1106V422H1117Z" fill="#1F2933"/>
+  </g>
+</svg>
