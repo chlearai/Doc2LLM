@@ -14,3 +14,10 @@ def test_startup_launcher_reads_port_from_environment(monkeypatch) -> None:
     start = importlib.import_module("start")
 
     assert start.get_port() == 4321
+
+
+def test_railway_requirements_include_runtime_server() -> None:
+    with open("requirements.txt", encoding="utf-8") as requirements_file:
+        requirements = requirements_file.read()
+
+    assert "uvicorn[standard]" in requirements
