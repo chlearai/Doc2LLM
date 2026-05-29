@@ -11,12 +11,12 @@
   --warning: oklch(0.72 0.12 85);
   --error: oklch(0.58 0.16 28);
   --focus: oklch(0.68 0.12 245);
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
+  --text-xs: clamp(0.7rem, 0.66rem + 0.2vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+  --text-base: clamp(0.9rem, 0.85rem + 0.35vw, 1rem);
+  --text-lg: clamp(1.05rem, 0.95rem + 0.5vw, 1.125rem);
+  --text-xl: clamp(1.15rem, 1rem + 0.75vw, 1.25rem);
+  --text-2xl: clamp(1.35rem, 1.2rem + 1.2vw, 1.5rem);
 
   /* Easing curves from Impeccable guidelines */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -700,23 +700,46 @@ textarea {
 
 @media (max-width: 860px) {
   .topbar {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
     padding: 16px 18px;
+  }
+
+  .brand {
+    justify-content: center;
   }
 
   .nav {
     width: 100%;
-    justify-content: stretch;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbars on Firefox */
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--surface-muted);
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none; /* Hide scrollbars on Chrome/Safari */
   }
 
   .nav-link {
-    flex: 1;
+    flex: 0 0 auto;
     justify-content: center;
+    white-space: nowrap;
+    padding: 0 16px;
   }
 
   .account {
+    display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 12px;
   }
 
   .dashboard-grid {
@@ -725,15 +748,85 @@ textarea {
 
   .section-heading {
     display: grid;
+    gap: 12px;
   }
 
   .preview-heading,
   .detail-header {
     display: grid;
+    gap: 12px;
   }
 
   .preview-actions {
     justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .account {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 8px 0;
+  }
+
+  .mode-toggle-container {
+    margin-right: 0 !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .account > span {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  .account button,
+  .account a {
+    width: 100% !important;
+  }
+
+  /* Form and grid fields stacking on mobile */
+  div[style*="grid-template-columns"],
+  div[style*="grid-template-rows"],
+  div[style*="gridTemplateColumns"],
+  div[style*="gridTemplateRows"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Admin search forms and buttons stacking on mobile */
+  .page-panel form {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .page-panel form > div {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+
+  .page-panel form button,
+  .page-panel button {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+  
+  /* Filter select elements layout stretching */
+  .page-panel div[style*="align-items: center"],
+  .page-panel div[style*="alignItems: center"],
+  .page-panel div[style*="display: flex"],
+  .page-panel div[style*="display:flex"] {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .page-panel select {
+    width: 100% !important;
+    height: 44px !important;
   }
 }
 
@@ -748,9 +841,19 @@ textarea {
   .login-panel {
     padding: 20px;
   }
+}
 
-  .nav-link span {
-    display: none;
+@media (max-width: 400px) {
+  .workspace-panel,
+  .page-panel,
+  .login-panel {
+    padding: 16px;
+  }
+  .shell-main {
+    width: calc(100% - 16px);
+  }
+  .topbar {
+    padding: 12px;
   }
 }
 

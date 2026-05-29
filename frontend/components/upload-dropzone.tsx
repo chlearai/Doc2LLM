@@ -30,6 +30,11 @@ export function UploadDropzone({
         event.preventDefault();
         if (!disabled) handleFiles(event.dataTransfer.files);
       }}
+      onClick={(event) => {
+        if (!disabled && inputRef.current && !(event.target as HTMLElement).closest("button")) {
+          inputRef.current.click();
+        }
+      }}
     >
       <input
         ref={inputRef}

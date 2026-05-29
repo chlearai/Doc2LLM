@@ -8,11 +8,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "MarkIt — Prepare Documents for AI",
     description: "Get more from Claude & ChatGPT with clean Markdown.",
-    url: "https://doc2md-one.vercel.app",
+    url: "https://markitdoc.vercel.app",
     siteName: "MarkIt",
     images: [
       {
-        url: "/bg1.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "MarkIt — AI-Ready Markdown",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MarkIt — Prepare Documents for AI",
     description: "Get more from Claude & ChatGPT with clean Markdown.",
-    images: ["/bg1.png"],
+    images: ["/og-image.jpg"],
   },
   icons: {
     icon: "/favicon.ico",
