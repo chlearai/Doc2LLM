@@ -59,3 +59,8 @@ def test_token_tracking_ocr_service_logs_openai_usage():
     assert kwargs["model"] == "gpt-4o-mini"
     assert kwargs["temperature"] == 0
     assert kwargs["max_tokens"] == 4096
+    assert kwargs["messages"][0]["content"][0]["text"] == (
+        "Extract all text from this image. Maintain the original layout and order. "
+        "Return the extracted text with a one-sentence description of the content and context. "
+        "Return in simple Markdown."
+    )

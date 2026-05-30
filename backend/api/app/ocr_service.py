@@ -17,9 +17,9 @@ from markitdown_ocr import LLMVisionOCRService, OCRResult
 
 OCR_MODEL = "gpt-4o-mini"
 OCR_PROMPT = (
-    "Extract readable text from this document image for a Markdown conversion. "
-    "Preserve headings, table-like structure, lists, labels, and reading order. "
-    "Return only extracted text. Do not describe the image and do not add commentary."
+    "Extract all text from this image. Maintain the original layout and order. "
+    "Return the extracted text with a one-sentence description of the content and context. "
+    "Return in simple Markdown."
 )
 
 
