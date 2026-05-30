@@ -15,6 +15,7 @@ type UserProfile = {
   is_active: boolean;
   created_at: string;
   files_converted: number;
+  ocr_tokens_consumed: number;
 };
 
 export default function AdminUsers() {
@@ -219,6 +220,7 @@ export default function AdminUsers() {
                 <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Role</th>
                 <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Status</th>
                 <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Conversions</th>
+                <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase" }}>OCR Tokens</th>
                 <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Joined Date</th>
                 <th style={{ padding: "12px", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", textAlign: "right" }}>Actions</th>
               </tr>
@@ -266,6 +268,7 @@ export default function AdminUsers() {
                     </span>
                   </td>
                   <td style={{ padding: "12px", fontSize: "var(--text-sm)", fontWeight: 600 }}>{user.files_converted}</td>
+                  <td style={{ padding: "12px", fontSize: "var(--text-sm)", fontWeight: 600 }}>{user.ocr_tokens_consumed.toLocaleString()}</td>
                   <td style={{ padding: "12px", fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
@@ -294,7 +297,7 @@ export default function AdminUsers() {
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "var(--text-muted)" }}>
+                  <td colSpan={7} style={{ padding: "32px", textAlign: "center", color: "var(--text-muted)" }}>
                     No users found matching the query.
                   </td>
                 </tr>

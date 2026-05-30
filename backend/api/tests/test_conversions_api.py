@@ -90,9 +90,16 @@ def test_completed_conversion_returns_download_url(tmp_path: Path):
 
 
 def test_post_conversions_converts_small_text_file_and_cleans_source(tmp_path: Path):
+    seen = {}
+
+    def convert(source: Path, *, user_id: str, repository) -> str:
+        seen["user_id"] = user_id
+        seen["repository"] = repository
+        return source.read_text(encoding="utf-8")
+
     manager = ConversionManager.for_tests(
         temp_root=tmp_path / "tmp",
-        convert=lambda source: source.read_text(encoding="utf-8"),
+        convert=convert,
     )
     client = _client(manager)
 
@@ -109,6 +116,7 @@ def test_post_conversions_converts_small_text_file_and_cleans_source(tmp_path: P
     assert body["file_type"] == "txt"
     assert body["markdown_storage_path"].endswith("/output.md")
     assert not any((tmp_path / "tmp").glob("**/input.*"))
+    assert seen == {"user_id": _user().id, "repository": manager.repository}
 
 
 def test_get_conversions_returns_only_authenticated_user_items(tmp_path: Path):
