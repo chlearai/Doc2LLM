@@ -112,6 +112,12 @@ def test_admin_stats_uses_repository_interface_without_private_in_memory_state(t
 
 def test_admin_user_management(tmp_path):
     manager = ConversionManager.for_tests(temp_root=tmp_path / "tmp")
+    manager.repository.log_feature_usage(
+        "11111111-1111-4111-8111-111111111111",
+        "ocr",
+        "gpt-4o-mini",
+        1250,
+    )
     app.dependency_overrides[get_current_user] = _admin
     app.dependency_overrides[get_conversion_manager] = lambda: manager
     client = TestClient(app)
@@ -124,6 +130,8 @@ def test_admin_user_management(tmp_path):
     emails = [u["email"] for u in users]
     assert "dev@local.test" in emails
     assert "admin@local.test" in emails
+    dev_user = next(u for u in users if u["email"] == "dev@local.test")
+    assert dev_user["ocr_tokens_consumed"] == 1250
 
     # 2. Create a new user
     create_resp = client.post(
@@ -135,6 +143,7 @@ def test_admin_user_management(tmp_path):
     assert new_user["email"] == "new_user@test.com"
     assert new_user["role"] == "user"
     assert new_user["is_active"] is True
+    assert new_user["ocr_tokens_consumed"] == 0
 
     # 3. Create duplicate user should fail
     dup_resp = client.post(

@@ -165,6 +165,28 @@ class SupabaseConversionRepository:
             return int(content_range.split("/")[-1])
         return 0
 
+    def log_feature_usage(self, user_id: str, feature: str, model: str, tokens: int) -> None:
+        payload = {
+            "user_id": user_id,
+            "feature": feature,
+            "model": model,
+            "tokens": tokens,
+        }
+        res = self.client.post(f"{self.supabase_url}/rest/v1/feature_usage", json=payload)
+        res.raise_for_status()
+
+    def get_user_tokens(self, user_id: str, feature: str = "ocr") -> int:
+        res = self.client.get(
+            f"{self.supabase_url}/rest/v1/feature_usage",
+            params={
+                "user_id": f"eq.{user_id}",
+                "feature": f"eq.{feature}",
+                "select": "tokens",
+            },
+        )
+        res.raise_for_status()
+        return sum(int(item.get("tokens") or 0) for item in res.json())
+
     def create_upload_received(
         self,
         *,
@@ -305,6 +327,7 @@ class InMemoryConversionRepository:
     def __init__(self) -> None:
         self._records: dict[str, ConversionRecord] = {}
         self.logs: list[tuple[str, str, str]] = []
+        self.feature_usage: list[dict] = []
         self._profiles: dict[str, InMemoryUserProfile] = {}
         
         # Seed dummy dev and admin accounts
@@ -405,6 +428,24 @@ class InMemoryConversionRepository:
 
     def count_user_files(self, user_id: str) -> int:
         return sum(1 for r in self._records.values() if r.user_id == user_id and r.status != "DELETED")
+
+    def log_feature_usage(self, user_id: str, feature: str, model: str, tokens: int) -> None:
+        self.feature_usage.append(
+            {
+                "user_id": user_id,
+                "feature": feature,
+                "model": model,
+                "tokens": tokens,
+                "created_at": datetime.now(UTC),
+            }
+        )
+
+    def get_user_tokens(self, user_id: str, feature: str = "ocr") -> int:
+        return sum(
+            int(item["tokens"])
+            for item in self.feature_usage
+            if item["user_id"] == user_id and item["feature"] == feature
+        )
 
     def count_users(self) -> int:
         return len(self._profiles)

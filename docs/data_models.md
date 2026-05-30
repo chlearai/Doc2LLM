@@ -125,6 +125,43 @@ CREATE INDEX conversion_logs_conversion_created_idx
 ON conversion_logs (conversion_id, created_at ASC);
 ```
 
+### feature_usage
+
+Stores token usage transactions for model-backed features such as OCR. This table is append-only from the application point of view so admin usage totals can be aggregated without storing source files or Markdown output in Postgres.
+
+```sql
+CREATE TABLE feature_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    feature TEXT NOT NULL,
+    model TEXT NOT NULL,
+    tokens INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT feature_usage_tokens_check CHECK (tokens >= 0)
+);
+```
+
+Fields:
+
+| Field | Type | Required | Notes |
+|---|---|---:|---|
+| `id` | UUID | Yes | Usage row ID. |
+| `user_id` | UUID | Yes | User whose conversion triggered the usage. |
+| `feature` | TEXT | Yes | Feature name, currently `ocr`. |
+| `model` | TEXT | Yes | Model name, currently `gpt-4o-mini`. |
+| `tokens` | INTEGER | Yes | Total request tokens reported by the model provider. |
+| `created_at` | TIMESTAMPTZ | Yes | Creation timestamp. |
+
+Recommended indexes:
+
+```sql
+CREATE INDEX feature_usage_user_idx
+ON feature_usage (user_id);
+
+CREATE INDEX feature_usage_user_feature_idx
+ON feature_usage (user_id, feature);
+```
+
 ## Status Lifecycle
 
 ```txt

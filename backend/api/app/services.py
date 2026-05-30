@@ -1,6 +1,7 @@
 from pathlib import Path
 import asyncio
 from collections.abc import Callable
+import inspect
 import logging
 
 from fastapi import UploadFile
@@ -26,7 +27,7 @@ class ConversionManager:
         limiter: ConversionLimiter,
         temp_root: Path,
         timeout_seconds: int = 300,
-        convert: Callable[[Path], str] | None = None,
+        convert: Callable[..., str] | None = None,
     ) -> None:
         self.repository = repository
         self.storage = storage
@@ -40,7 +41,7 @@ class ConversionManager:
         cls,
         *,
         temp_root: Path,
-        convert: Callable[[Path], str] | None = None,
+        convert: Callable[..., str] | None = None,
     ) -> "ConversionManager":
         return cls(
             repository=InMemoryConversionRepository(),
@@ -84,7 +85,11 @@ class ConversionManager:
             source_path.write_bytes(content)
             processing = self.repository.update_status(record.id, "PROCESSING") or record
             markdown = await asyncio.wait_for(
-                asyncio.to_thread(self.convert, source_path),
+                asyncio.to_thread(
+                    self._run_converter,
+                    source_path,
+                    record,
+                ),
                 timeout=self.timeout_seconds,
             )
             storage_path = self.storage.upload_markdown(processing, markdown)
@@ -104,3 +109,17 @@ class ConversionManager:
         finally:
             remove_temp_tree(conversion_dir)
             self.limiter.release_active()
+
+    def _run_converter(self, source_path: Path, record: ConversionRecord) -> str:
+        signature = inspect.signature(self.convert)
+        accepts_kwargs = any(
+            parameter.kind == inspect.Parameter.VAR_KEYWORD
+            for parameter in signature.parameters.values()
+        )
+        if accepts_kwargs or {"user_id", "repository"}.issubset(signature.parameters):
+            return self.convert(
+                source_path,
+                user_id=record.user_id,
+                repository=self.repository,
+            )
+        return self.convert(source_path)

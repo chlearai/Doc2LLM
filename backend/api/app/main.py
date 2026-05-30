@@ -542,7 +542,8 @@ def list_admin_users(
                 role=p.role,
                 is_active=p.is_active,
                 created_at=p.created_at,
-                files_converted=file_count
+                files_converted=file_count,
+                ocr_tokens_consumed=repo.get_user_tokens(p.id),
             )
         )
     return AdminUserListResponse(items=items, limit=limit, offset=offset)
@@ -579,7 +580,8 @@ def create_admin_user(
         role=profile.role,
         is_active=profile.is_active,
         created_at=profile.created_at,
-        files_converted=0
+        files_converted=0,
+        ocr_tokens_consumed=0,
     )
 
 
@@ -606,7 +608,8 @@ def update_admin_user_status(
         role=profile.role,
         is_active=profile.is_active,
         created_at=profile.created_at,
-        files_converted=repo.count_user_files(profile.id)
+        files_converted=repo.count_user_files(profile.id),
+        ocr_tokens_consumed=repo.get_user_tokens(profile.id),
     )
 
 
@@ -635,7 +638,8 @@ def update_admin_user_role(
         role=profile.role,
         is_active=profile.is_active,
         created_at=profile.created_at,
-        files_converted=repo.count_user_files(profile.id)
+        files_converted=repo.count_user_files(profile.id),
+        ocr_tokens_consumed=repo.get_user_tokens(profile.id),
     )
 
 

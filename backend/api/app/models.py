@@ -109,6 +109,7 @@ class AdminUserProfileResponse(BaseModel):
     is_active: bool
     created_at: datetime
     files_converted: int
+    ocr_tokens_consumed: int = 0
 
 
 class AdminUserListResponse(BaseModel):
@@ -178,5 +179,4 @@ class UpdateProfileRequest(BaseModel):
 
 class ChangePasswordRequest(BaseModel):
     password: str
-
 
